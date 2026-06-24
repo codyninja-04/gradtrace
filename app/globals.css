@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-canvas text-ink antialiased;
+}
+
+/* Honour the iOS safe area so the sticky mobile bar clears the home indicator. */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Lightweight prose styling for the Claude-generated action plan markdown. */
+.action-plan h1,
+.action-plan h2 {
+  @apply mt-6 mb-2 text-lg font-semibold text-ink;
+}
+.action-plan h3 {
+  @apply mt-4 mb-1 text-base font-semibold text-ink;
+}
+.action-plan p {
+  @apply my-2 text-sm leading-relaxed text-ink;
+}
+.action-plan ul {
+  @apply my-2 list-disc space-y-1 pl-5 text-sm text-ink;
+}
+.action-plan ol {
+  @apply my-2 list-decimal space-y-1 pl-5 text-sm text-ink;
+}
+.action-plan strong {
+  @apply font-semibold;
+}
+.action-plan code {
+  @apply rounded bg-canvas px-1 py-0.5 text-xs;
+}
