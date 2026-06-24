@@ -108,6 +108,7 @@ export interface Database {
           open_to_contract: boolean;
           preferred_company_types: string[];
           notes: string | null;
+          has_pro_report: boolean;
         };
         Insert: {
           user_id: string;
@@ -132,6 +133,7 @@ export interface Database {
           open_to_contract?: boolean;
           preferred_company_types?: string[];
           notes?: string | null;
+          has_pro_report?: boolean;
         };
         Update: Partial<Database['public']['Tables']['user_profiles']['Insert']>;
         Relationships: [];
@@ -141,6 +143,7 @@ export interface Database {
           id: string;
           user_id: string;
           created_at: string;
+          share_id: string;
           profile_snapshot: Json;
           matches: Json;
           salary_analysis: Json;
@@ -151,6 +154,7 @@ export interface Database {
           id?: string;
           user_id: string;
           created_at?: string;
+          share_id?: string;
           profile_snapshot: Json;
           matches: Json;
           salary_analysis?: Json;

@@ -2,20 +2,26 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { Paywall } from '@/components/pro/Paywall';
+import { FREE_MATCH_LIMIT } from '@/lib/pro';
 import type { Company, StoredMatch } from '@/lib/types';
 import { CategoryFilter, type DashboardFilters } from './CategoryFilter';
 import { CompanyMatchCard } from './CompanyMatchCard';
-
-const VISA_SAFE_LABELS = new Set(['apply_now', 'worth_applying']);
 
 export function DashboardMatches({
   matches,
   companies,
   reportId,
+  isPro,
+  userId,
+  email,
 }: {
   matches: StoredMatch[];
   companies: Company[];
   reportId: string;
+  isPro: boolean;
+  userId: string;
+  email?: string | null;
 }) {
   const companyById = useMemo(() => {
     const map = new Map<string, Company>();
@@ -57,6 +63,10 @@ export function DashboardMatches({
     stretch: matches.filter((m) => m.match_label === 'stretch').length,
   };
 
+  // Free users see only the top matches by score. The rest sit behind the paywall.
+  const limited = isPro ? visible : visible.slice(0, FREE_MATCH_LIMIT);
+  const hiddenCount = matches.length - FREE_MATCH_LIMIT;
+
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-3 gap-3">
@@ -67,17 +77,26 @@ export function DashboardMatches({
 
       <CategoryFilter filters={filters} industries={industries} onChange={update} />
 
-      {visible.length === 0 ? (
+      {limited.length === 0 ? (
         <p className="rounded-xl bg-white p-6 text-center text-sm text-muted ring-1 ring-line">
           No companies match these filters. Try loosening them.
         </p>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
-          {visible.map((m) => {
+          {limited.map((m) => {
             const company = companyById.get(m.company_id)!;
             return <CompanyMatchCard key={m.company_id} match={m} company={company} />;
           })}
         </div>
+      )}
+
+      {!isPro && hiddenCount > 0 && (
+        <Paywall
+          userId={userId}
+          email={email}
+          title={`${hiddenCount} more matches are waiting`}
+          subtitle={`You are seeing your top ${FREE_MATCH_LIMIT}. Unlock the full ranked list, your 4-week action plan and skill gap analysis.`}
+        />
       )}
 
       <div className="pb-safe sticky bottom-0 -mx-4 border-t border-line bg-white/95 px-4 py-3 backdrop-blur md:hidden">

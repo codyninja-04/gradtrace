@@ -81,6 +81,7 @@ export default async function DashboardPage() {
 
   const storedMatches = (report.matches as unknown as StoredMatch[]) ?? [];
   const salaryAnalysis = report.salary_analysis as unknown as SalaryAnalysis | null;
+  const isPro = Boolean(profile.has_pro_report);
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -106,6 +107,9 @@ export default async function DashboardPage() {
             matches={storedMatches}
             companies={companyList}
             reportId={report.id}
+            isPro={isPro}
+            userId={user.id}
+            email={user.email}
           />
         </div>
         <div className="order-1 lg:order-2">

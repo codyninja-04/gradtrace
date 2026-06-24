@@ -51,6 +51,7 @@ export interface UserProfile {
   preferred_company_types: string[];
   notes: string | null;
   onboarding_complete: boolean;
+  has_pro_report: boolean;
 }
 
 export interface Company {
@@ -125,6 +126,7 @@ export interface MatchReport {
   id: string;
   user_id: string;
   created_at: string;
+  share_id: string;
   profile_snapshot: UserProfile;
   matches: StoredMatch[];
   salary_analysis: SalaryAnalysis | null;

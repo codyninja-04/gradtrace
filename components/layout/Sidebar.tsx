@@ -8,6 +8,7 @@ const NAV = [
   { href: '/companies', label: 'Companies' },
   { href: '/salary', label: 'Salary tool' },
   { href: '/profile', label: 'Profile' },
+  { href: '/upgrade', label: 'Upgrade to Pro' },
 ];
 
 export function Sidebar() {

@@ -4,6 +4,8 @@ import { ActionPlanBlock } from '@/components/dashboard/ActionPlanBlock';
 import { CompanyMatchCard } from '@/components/dashboard/CompanyMatchCard';
 import { ScoreDistributionChart, SkillGapChart } from '@/components/dashboard/ReportCharts';
 import { SalaryBenchmark } from '@/components/dashboard/SalaryBenchmark';
+import { Paywall } from '@/components/pro/Paywall';
+import { ShareReportButton } from '@/components/pro/ShareReportButton';
 import { createClient } from '@/lib/supabase/server';
 import type { Company, SalaryAnalysis, StoredMatch, UserProfile } from '@/lib/types';
 
@@ -22,6 +24,13 @@ export default async function ReportPage({ params }: { params: { id: string } })
     .maybeSingle();
 
   if (!report) notFound();
+
+  const { data: profileRow } = await supabase
+    .from('user_profiles')
+    .select('has_pro_report')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  const isPro = Boolean(profileRow?.has_pro_report);
 
   const { data: companiesData } = await supabase
     .from('companies')
@@ -77,39 +86,49 @@ export default async function ReportPage({ params }: { params: { id: string } })
         <ScoreDistributionChart matches={matches} />
       </div>
 
-      <SkillGapChart skills={skillGap} />
+      {!isPro ? (
+        <Paywall userId={user.id} email={user.email} />
+      ) : (
+        <>
+          <ShareReportButton
+            shareUrl={`${process.env.NEXT_PUBLIC_APP_URL ?? ''}/share/${report.share_id}`}
+          />
 
-      <ActionPlanBlock reportId={report.id} initialPlan={report.action_plan} />
+          <SkillGapChart skills={skillGap} />
 
-      <section>
-        <h2 className="mb-3 text-lg font-semibold text-ink">Apply now and worth applying</h2>
-        {topMatches.length === 0 ? (
-          <p className="rounded-xl bg-white p-5 text-sm text-muted ring-1 ring-line">
-            Nothing scored above 50 yet. Add more skills or internship detail to your profile, then
-            regenerate.
-          </p>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2">
-            {topMatches.map((m) => {
-              const company = companyById.get(m.company_id);
-              if (!company) return null;
-              return <CompanyMatchCard key={m.company_id} match={m} company={company} />;
-            })}
-          </div>
-        )}
-      </section>
+          <ActionPlanBlock reportId={report.id} initialPlan={report.action_plan} />
 
-      {stretchMatches.length > 0 && (
-        <section>
-          <h2 className="mb-3 text-lg font-semibold text-ink">Stretch targets</h2>
-          <div className="grid gap-3 md:grid-cols-2">
-            {stretchMatches.map((m) => {
-              const company = companyById.get(m.company_id);
-              if (!company) return null;
-              return <CompanyMatchCard key={m.company_id} match={m} company={company} />;
-            })}
-          </div>
-        </section>
+          <section>
+            <h2 className="mb-3 text-lg font-semibold text-ink">Apply now and worth applying</h2>
+            {topMatches.length === 0 ? (
+              <p className="rounded-xl bg-white p-5 text-sm text-muted ring-1 ring-line">
+                Nothing scored above 50 yet. Add more skills or internship detail to your profile,
+                then regenerate.
+              </p>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2">
+                {topMatches.map((m) => {
+                  const company = companyById.get(m.company_id);
+                  if (!company) return null;
+                  return <CompanyMatchCard key={m.company_id} match={m} company={company} />;
+                })}
+              </div>
+            )}
+          </section>
+
+          {stretchMatches.length > 0 && (
+            <section>
+              <h2 className="mb-3 text-lg font-semibold text-ink">Stretch targets</h2>
+              <div className="grid gap-3 md:grid-cols-2">
+                {stretchMatches.map((m) => {
+                  const company = companyById.get(m.company_id);
+                  if (!company) return null;
+                  return <CompanyMatchCard key={m.company_id} match={m} company={company} />;
+                })}
+              </div>
+            </section>
+          )}
+        </>
       )}
     </div>
   );

@@ -15,6 +15,16 @@ export async function POST(request: Request) {
   const reportId = body?.reportId as string | undefined;
   if (!reportId) return NextResponse.json({ error: 'Missing reportId' }, { status: 400 });
 
+  // The action plan is a Pro feature, gate it server-side too.
+  const { data: profileRow } = await supabase
+    .from('user_profiles')
+    .select('has_pro_report')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (!profileRow?.has_pro_report) {
+    return NextResponse.json({ error: 'Upgrade to Pro to generate your action plan' }, { status: 403 });
+  }
+
   const { data: report } = await supabase
     .from('match_reports')
     .select('*')

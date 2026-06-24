@@ -59,11 +59,41 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ANTHROPIC_API_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_STRIPE_PAYMENT_LINK=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-Run the two migrations in `supabase/migrations` against your Supabase project,
-in order, to create the schema and seed the company database.
+Run the migrations in `supabase/migrations` against your Supabase project, in
+order, to create the schema, seed the company database and add the Pro columns.
+
+## Pro unlock (Stripe)
+
+Pro is a one-time S$15 unlock, no subscription, since this is a tool you use once
+or twice.
+
+- Free: profile, your top 15 matches, and a basic salary range.
+- Pro: the full ranked list, the AI 4-week action plan, skill gap analysis, and a
+  private share link for a mentor.
+
+How it is wired:
+
+1. Create a one-time price and a Payment Link in the Stripe dashboard, set its
+   post-payment redirect to `${NEXT_PUBLIC_APP_URL}/upgrade/success`, and put the
+   link in `NEXT_PUBLIC_STRIPE_PAYMENT_LINK`.
+2. The upgrade button appends `client_reference_id` (the Supabase user id) and
+   `prefilled_email` to that link.
+3. Add a webhook endpoint pointing at `/api/stripe/webhook` for the
+   `checkout.session.completed` event, and put its signing secret in
+   `STRIPE_WEBHOOK_SECRET`. The handler verifies the signature and flips
+   `has_pro_report` to true via the service-role client.
+
+Locally, forward events with the Stripe CLI:
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
 
 ## The company database is the moat
 
